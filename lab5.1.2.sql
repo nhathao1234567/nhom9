@@ -97,3 +97,79 @@ begin
 end
 
 exec nhapvaoj '004 ','1'
+----bai3
+--Thêm phòng ban có tên CNTT vào csdl QLDA, các giá trị được thêm vào dưới dạng tham số đầu vào, kiếm tra nếu trùng Maphg thì thông báo thêm thất bại.
+update PHONGBAN set TENPHG ='IT', TRPHG ='008' ,NG_NHANCHUC = '2020-11-30'
+WHERE MAPHG='7'
+CREATE PROC sp_InsertPB
+	@MaPB int, @TenPB nvarchar(15),
+	@MaTP nvarchar(9), @NgayNhanChuc date
+AS
+BEGIN
+	if(exists(select * from PHONGBAN where MAPHG = @MaPB ))
+		print 'Them that bai'
+	else 
+		begin
+			insert into PHONGBAN(MAPHG, TENPHG, TRPHG, NG_NHANCHUC)
+			values(@MaPB, @TenPB,@MaTP,@NgayNhanChuc)
+			print 'Them thanh cong'
+		end
+END
+
+exec sp_InsertPB '8', 'CNTT', '008', '2020-10-06'
+--Cập nhật phòng ban có tên CNTT thành phòng IT.
+CREATE PROC sp_UpdatePB
+	@MaPB int, @TenPB nvarchar(15),
+	@MaTP nvarchar(9), @NgayNhanChuc date
+AS
+BEGIN
+	if(exists(select * from PHONGBAN where MAPHG = @MaPB ))
+		update PHONGBAN set TENPHG = @TenPB, TRPHG = @MaTP, NG_NHANCHUC = @NgayNhanChuc
+		where MAPHG = @MaPB
+	else 
+		begin
+			insert into PHONGBAN(MAPHG, TENPHG, TRPHG, NG_NHANCHUC)
+			values(@MaPB, @TenPB,@MaTP,@NgayNhanChuc)
+			print 'Them thanh cong'
+		end
+END
+
+exec sp_UpdatePB '8', 'IT', '008', '2020-10-06'
+/*Thêm một nhân viên vào bảng NhanVien, tất cả giá trị đều truyền dưới dạng tham số đầu
+vào với điều kiện:
+ nhân viên này trực thuộc phòng IT
+Nhận @luong làm tham số đầu vào cho cột Luong, nếu @luong<25000 thì nhân
+viên này do nhân viên có mã 009 quản lý, ngươc lại do nhân viên có mã 005 quản
+lý
+ Nếu là nhân viên nam thi nhân viên phải nằm trong độ tuổi 18-65, nếu là nhân
+viên nữ thì độ tuổi phải từ 18-60*/
+create proc sp_InsertNhanVien
+	@HONV nvarchar(15), @TENLOT nvarchar(15), @TENNV nvarchar(15),
+	@MANV nvarchar(6), @NGSINH date, @DCHI nvarchar(50), @PHAI nvarchar(3),
+	@LUONG float, @MA_NQL nvarchar(3) = null, @PHG int
+as
+begin
+	declare @age int 
+	set @age = YEAR(GETDATE()) - YEAR (@NGSINH)
+	if @PHG = (select MAPHG from PHONGBAN where TENPHG = 'IT')
+		begin
+			if @LUONG < 25000
+				set @MA_NQL = '009'
+			else set @MA_NQL = '005'
+
+			if (@PHAI = 'Nam' and (@age >= 18 and @age <= 65))
+				or (@PHAI = 'Nu' and (@age >= 18 and @age <= 60))
+				begin
+					insert into NHANVIEN(HONV, TENLOT, TENNV, MANV, NGSINH, DCHI, PHAI, LUONG, MA_NQL, PHG)
+					values (@HONV, @TENLOT, @TENNV, @MANV, @NGSINH, @DCHI, @PHAI, @LUONG, @MA_NQL, @PHG)
+				end
+			else 
+				print 'Khong thuoc do tuoi lao dong'
+		end
+	else 
+		print 'Khong phai Phong Ban IT'
+end
+
+exec sp_InsertNhanVien 'Nguyen', 'Van', 'Nam', '008', '2020-06-10', 'Da Nang', 'Nam', '25000', '004', '8'
+exec sp_InsertNhanVien 'Nguyen', 'Van', 'Nam', '006', '2020-06-10', 'Da Nang', 'Nam', '25000', '004', '8'
+exec sp_InsertNhanVien 'Nguyen', 'Van', 'Nu', '005', '1954-06-10', 'Da Nang', 'Nam', '25000', '004', '8'
