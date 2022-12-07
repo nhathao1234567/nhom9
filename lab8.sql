@@ -1,4 +1,15 @@
-﻿--CAU2   Tạo quan hệ SANPHAM1 chứa toàn bộ dữ liệu của quan hệ SANPHAM. Tạo quan hệ KHACHHANG1 chứa toàn bộ dữ liệu của quan hệ KHACHHANG.
+﻿--I
+--Giá bán của sản phẩm từ 500 đồng trở lên.
+alter table SanPham 
+add constraint SanPham_Gia check(gia>500)
+--Mỗi lần mua hàng, khách hàng phải mua ít nhất 1 sản phẩm.
+
+--II
+--CAU1
+--Tạo quan hệ SANPHAM1 chứa toàn bộ dữ liệu của quan hệ SANPHAM. Tạo quan hệ KHACHHANG1 chứa toàn bộ dữ liệu của quan hệ KHACHHANG.
+select *
+from SanPham,KhachHang
+--CAU2   Tạo quan hệ SANPHAM1 chứa toàn bộ dữ liệu của quan hệ SANPHAM. Tạo quan hệ KHACHHANG1 chứa toàn bộ dữ liệu của quan hệ KHACHHANG.
 
 SELECT * FROM SANPHAM,KHACHHANG
 
